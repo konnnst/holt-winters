@@ -1,7 +1,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "hw.h"
+#include "hw_debug.h"
+
+double* forecast_auto(double *series, int series_length, int season_length, int forecast_length) {
+    double *result = forecast(series, series_length, season_length, forecast_length, NULL, 0);
+    return result;
+}
+
+double* forecast_manual(double *series, int series_length, int season_length, int forecast_length, double alpha, double beta, double gamma) {
+    double coefficients_arr[] = { alpha, beta, gamma }, *coefficients = coefficients_arr;
+    double *result = forecast(series, series_length, season_length, forecast_length, coefficients, 0);
+    return result;
+}
 
 void holt_winters_forecast(
         double *forecast,
@@ -60,7 +71,7 @@ void holt_winters(
     // Compute for first period
     for (int i = 1; i < season_length; ++i) {
         smoothed[i] = alpha * series[i] / seasonals[i] + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
-        trend[i] = beta * (smoothed[i] - smoothed[i - 1]) + (1 - alpha) * trend[i - 1];
+        trend[i] = beta * (smoothed[i] - smoothed[i - 1]) + (1 - beta) * trend[i - 1];
 
         *error += (series[i] - smoothed[i]) * (series[i] - smoothed[i]);
     }
@@ -68,18 +79,15 @@ void holt_winters(
     // Compute for later periods
     for (int i = season_length; i < series_length; ++i) {
         smoothed[i] = alpha * series[i] / seasonals[i - season_length] + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
-        trend[i] = beta * (smoothed[i] - smoothed[i - 1]) + (1 - alpha) * trend[i - 1];
+        trend[i] = beta * (smoothed[i] - smoothed[i - 1]) + (1 - beta) * trend[i - 1];
         seasonals[i] = gamma * (series[i] / smoothed[i]) + (1 - gamma) * seasonals[i - season_length];
 
         *error += (series[i] - smoothed[i]) * (series[i] - smoothed[i]);
     }
 }
 
-void mse_coefficients(double *series, int series_length) {
-    double alpha = 0, beta = 0, gamma = 0;
-}
 
-double* forecast(double *series, int series_length, int season_length, int forecast_length, double *coefficients) {
+double* forecast(double *series, int series_length, int season_length, int forecast_length, double *coefficients, int debug) {
         double initial_smoothed = get_initial_smoothed(series, series_length);
         double initial_trend = get_initial_trend(season_length, series, series_length);
         double* initial_seasonals = get_initial_seasonals(season_length, series, series_length);
@@ -89,12 +97,12 @@ double* forecast(double *series, int series_length, int season_length, int forec
         trend = malloc(sizeof(double) * series_length);
         seasonals = malloc(sizeof(double) * series_length);
 
-        double zero = 0, *error;
+        double zero = 0, *error, min_error = -1;
         error = &zero;
         double alpha_0, beta_0, gamma_0;
         
+        // Calculate indices up 
         if (coefficients == NULL) {
-            double min_error = -1;
 
             for (double alpha = 0; alpha <= 1; alpha += 0.005) {
                 for (double beta = 0; beta <= 1; beta += 0.005) {
@@ -144,11 +152,9 @@ double* forecast(double *series, int series_length, int season_length, int forec
 
             smoothed, trend, seasonals,
 
-            error
+            &min_error
         );
 
-
-        // Forecasting values
         double *forecast = malloc(sizeof(double) * forecast_length);
         holt_winters_forecast(
                 forecast, forecast_length,
@@ -167,6 +173,13 @@ double* forecast(double *series, int series_length, int season_length, int forec
                 int now = forecast[i - series_length];
                 result[i] = forecast[i - series_length];
             }
+        }
+
+        // Print debug information
+        if (debug) {
+            print_error(&min_error);
+            print_coefficients(alpha_0, beta_0, gamma_0);
+            print_indices(smoothed, trend, seasonals, series_length);
         }
 
         // Releasing dynamically allocated memory

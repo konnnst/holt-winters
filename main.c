@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "hw.h"
+#include "hw_debug.h"
+#include "hw_api.h"
 
 int main() {
     // User data
@@ -25,20 +26,25 @@ int main() {
     }, *series = series_arr;
     int series_length = sizeof(series_arr) / sizeof(double);
     int season_length = 4;
-    int forecast_length = 8;
+    int forecast_length = 14;
 
 
-    double alpha = 0.85;
-    double beta = 0.995;
-    double gamma = 0.995;
+    double alpha = 0.835;
+    double beta = 0;
+    double gamma = 0.9;
+    //double alpha = 0.85;
+    //double beta = 0.995;
+    //double gamma = 0.995;
     double coeffs_arr[3] = {alpha, beta, gamma}, *coeffs = coeffs_arr;
+    int debug = 1;
     
     double* fc = forecast(
         series,
         series_length,
         season_length,
         forecast_length,
-        coeffs
+        coeffs,
+        debug
     );
 
     for (int i = 0; i < series_length + forecast_length; ++i) {
