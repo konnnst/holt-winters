@@ -1,7 +1,9 @@
 // IO
+void print_coefficients(double alpha, double beta, double gamma);
 void print_initial_parameters(double initial_smoothed, double initial_trend, double *initial_seasonals, int season_length);
 void print_indices(double *smoothed, double *trend, double *seasonals, int length);
 void print_forecast(double *series, int series_length, double *forecast, int forecast_length);
+void print_error(double *error);
 
 // Initialization
 double get_initial_smoothed(double *series, int series_length);
@@ -36,5 +38,8 @@ void holt_winters(
 
         double *smoothed,
         double *trend,
-        double *seasonals
+        double *seasonals,
+
+        double *error
 );
+void mse_coefficients(double *series, int series_length);

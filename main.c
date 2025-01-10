@@ -32,9 +32,9 @@ int main() {
     double initial_trend = get_initial_trend(season_length, series, series_length);
     double* initial_seasonals = get_initial_seasonals(season_length, series, series_length);
 
-    double alpha = 0.7556;
-    double beta = 0.000;
-    double gamma = 0.9837;
+    double alpha = 0.8;
+    double beta = 0.2;
+    double gamma = 0.8;
     //double alpha = 1.4901161193847666e-08;
     //double beta = 1.5900321668960454e-09;
     //double gamma = 8.854717309361246e-27;
@@ -46,35 +46,81 @@ int main() {
     double *smoothed, *trend, *seasonals;
     smoothed = malloc(sizeof(double) * series_length);
     trend = malloc(sizeof(double) * series_length);
+    double zero = 0, *error;
+    error = &zero;
     seasonals = malloc(sizeof(double) * series_length);
-    holt_winters(
-        series,
-        series_length,
-        season_length,
-        
-        initial_smoothed,
-        initial_trend,
-        initial_seasonals,
-        
-        alpha,
-        beta,
-        gamma,
 
-        smoothed,
-        trend,
-        seasonals
-    );
-    print_indices(smoothed, trend, seasonals, series_length);
+    double alpha_0 = 0;
+    double beta_0 = 0;
+    double gamma_0 = 0;
+    double min_error = -1;
+
+    for (alpha = 0; alpha <= 1; alpha += 0.005) {
+        for (beta = 0; beta <= 1; beta += 0.005) {
+            for (gamma = 0; gamma <= 1; gamma += 0.005) {
+                holt_winters(
+                    series,
+                    series_length,
+                    season_length,
+                    
+                    initial_smoothed,
+                    initial_trend,
+                    initial_seasonals,
+                    
+                    alpha,
+                    beta,
+                    gamma,
+
+                    smoothed,
+                    trend,
+                    seasonals,
+
+                    error
+                );
+
+                if (min_error < 0 || *error < min_error) {
+                    alpha_0 = alpha;
+                    beta_0 = beta;
+                    gamma_0 = gamma;
+                    min_error = *error;
+                }
+                *error = 0;
+            }
+        }
+    }
+    print_error(&min_error);
+    print_coefficients(alpha_0, beta_0, gamma_0);
+    //holt_winters(
+    //    series,
+    //    series_length,
+    //    season_length,
+    //    
+    //    initial_smoothed,
+    //    initial_trend,
+    //    initial_seasonals,
+    //    
+    //    alpha,
+    //    beta,
+    //    gamma,
+
+    //    smoothed,
+    //    trend,
+    //    seasonals,
+
+    //    error
+    //);
+    //print_error(error);
+    //print_indices(smoothed, trend, seasonals, series_length);
 
     // Forecasting and printing
-    int forecast_length = 8; 
-    double *forecast = malloc(sizeof(double) * forecast_length);
-    holt_winters_forecast(forecast, forecast_length, smoothed, trend, seasonals, series_length, season_length);
-    print_forecast(series, series_length, forecast, forecast_length);
+//    int forecast_length = 8; 
+//    double *forecast = malloc(sizeof(double) * forecast_length);
+//    holt_winters_forecast(forecast, forecast_length, smoothed, trend, seasonals, series_length, season_length);
+//    print_forecast(series, series_length, forecast, forecast_length);
 
     free(initial_seasonals);
     free(smoothed);
     free(trend);
     free(seasonals);
-    free(forecast);
+    //free(forecast);
 }

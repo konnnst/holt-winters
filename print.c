@@ -1,5 +1,12 @@
 #include <stdio.h>
 
+void print_error(double *error) {
+    printf("MSE: %f\n", *error);
+}
+
+void print_coefficients(double alpha, double beta, double gamma) {
+    printf("Alpha: %f, Beta: %f, Gamma: %f\n", alpha, beta, gamma);
+}
 
 void print_initial_parameters(double initial_smoothed, double initial_trend, double *initial_seasonals, int season_length) {
     printf("Smoothed: %f\n", initial_smoothed);
@@ -27,3 +34,4 @@ void print_forecast(double *series, int series_length, double *forecast, int for
         printf("%f ", forecast[i]);
     }
 }
+
