@@ -82,13 +82,14 @@ double* forecast(double *series, int series_length, int season_length, int forec
         double initial_smoothed = get_initial_smoothed(series, series_length);
         double initial_trend = get_initial_trend(season_length, series, series_length);
         double* initial_seasonals = get_initial_seasonals(season_length, series, series_length);
+
         double *smoothed, *trend, *seasonals;
         smoothed = malloc(sizeof(double) * series_length);
         trend = malloc(sizeof(double) * series_length);
-        double zero = 0, *error;
-        error = &zero;
         seasonals = malloc(sizeof(double) * series_length);
 
+        double zero = 0, *error;
+        error = &zero;
         double alpha_0, beta_0, gamma_0;
         
         if (coefficients == NULL) {
@@ -129,5 +130,32 @@ double* forecast(double *series, int series_length, int season_length, int forec
             gamma_0 = coefficients[2];
         }
 
+
+        // Forecasting values
+        double *forecast = malloc(sizeof(double) * forecast_length);
+        holt_winters_forecast(
+                forecast, forecast_length,
+                smoothed, trend, seasonals,
+                series_length, season_length
+        );
         
+
+        // Concatenate smoothed and forecasted values
+        double *result = malloc(sizeof(double) * (series_length + forecast_length));
+        for (int i = 0; i < series_length + forecast_length; ++i) {
+            if (i < series_length) {
+                result[i] = smoothed[i];
+            } else {
+                result[i] = forecast[i - series_length];
+            }
+        }
+
+        // Releasing dynamically allocated memory
+        free(initial_seasonals);
+        free(smoothed);
+        free(trend);
+        free(seasonals);
+        free(forecast);
+
+        return result;
 }

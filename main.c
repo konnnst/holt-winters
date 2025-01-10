@@ -112,15 +112,4 @@ int main() {
     //print_error(error);
     //print_indices(smoothed, trend, seasonals, series_length);
 
-    // Forecasting and printing
-//    int forecast_length = 8; 
-//    double *forecast = malloc(sizeof(double) * forecast_length);
-//    holt_winters_forecast(forecast, forecast_length, smoothed, trend, seasonals, series_length, season_length);
-//    print_forecast(series, series_length, forecast, forecast_length);
-
-    free(initial_seasonals);
-    free(smoothed);
-    free(trend);
-    free(seasonals);
-    //free(forecast);
 }
