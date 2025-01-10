@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "hw.h"
 
@@ -21,95 +22,33 @@ int main() {
         544, 582, 681, 557,
         628, 707, 773, 592,
         627, 725, 854, 661
-    };
-    int season_length = 4;
-
-    // Initial calculations
-    double *series = series_arr;
+    }, *series = series_arr;
     int series_length = sizeof(series_arr) / sizeof(double);
-
-    double initial_smoothed = get_initial_smoothed(series, series_length);
-    double initial_trend = get_initial_trend(season_length, series, series_length);
-    double* initial_seasonals = get_initial_seasonals(season_length, series, series_length);
-
-    double alpha = 0.8;
-    double beta = 0.2;
-    double gamma = 0.8;
-    //double alpha = 1.4901161193847666e-08;
-    //double beta = 1.5900321668960454e-09;
-    //double gamma = 8.854717309361246e-27;
-
-    print_initial_parameters(initial_smoothed, initial_trend, initial_seasonals, season_length);
+    int season_length = 4;
+    int forecast_length = 8;
 
 
-    // Getting smoothed indices for further predicting
-    double *smoothed, *trend, *seasonals;
-    smoothed = malloc(sizeof(double) * series_length);
-    trend = malloc(sizeof(double) * series_length);
-    double zero = 0, *error;
-    error = &zero;
-    seasonals = malloc(sizeof(double) * series_length);
+    double alpha = 0.85;
+    double beta = 0.995;
+    double gamma = 0.995;
+    double coeffs_arr[3] = {alpha, beta, gamma}, *coeffs = coeffs_arr;
+    
+    double* fc = forecast(
+        series,
+        series_length,
+        season_length,
+        forecast_length,
+        coeffs
+    );
 
-    double alpha_0 = 0;
-    double beta_0 = 0;
-    double gamma_0 = 0;
-    double min_error = -1;
-
-    for (alpha = 0; alpha <= 1; alpha += 0.005) {
-        for (beta = 0; beta <= 1; beta += 0.005) {
-            for (gamma = 0; gamma <= 1; gamma += 0.005) {
-                holt_winters(
-                    series,
-                    series_length,
-                    season_length,
-                    
-                    initial_smoothed,
-                    initial_trend,
-                    initial_seasonals,
-                    
-                    alpha,
-                    beta,
-                    gamma,
-
-                    smoothed,
-                    trend,
-                    seasonals,
-
-                    error
-                );
-
-                if (min_error < 0 || *error < min_error) {
-                    alpha_0 = alpha;
-                    beta_0 = beta;
-                    gamma_0 = gamma;
-                    min_error = *error;
-                }
-                *error = 0;
-            }
+    for (int i = 0; i < series_length + forecast_length; ++i) {
+        printf("%f", fc[i]);
+        if (i % 4 == 3) {
+            printf(",\n");
+        } else {
+            printf(", ");
         }
     }
-    print_error(&min_error);
-    print_coefficients(alpha_0, beta_0, gamma_0);
-    //holt_winters(
-    //    series,
-    //    series_length,
-    //    season_length,
-    //    
-    //    initial_smoothed,
-    //    initial_trend,
-    //    initial_seasonals,
-    //    
-    //    alpha,
-    //    beta,
-    //    gamma,
 
-    //    smoothed,
-    //    trend,
-    //    seasonals,
-
-    //    error
-    //);
-    //print_error(error);
-    //print_indices(smoothed, trend, seasonals, series_length);
-
+    free(fc);
 }

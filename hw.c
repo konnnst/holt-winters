@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "hw.h"
 
@@ -130,6 +131,22 @@ double* forecast(double *series, int series_length, int season_length, int forec
             gamma_0 = coefficients[2];
         }
 
+        holt_winters(
+            series,
+            series_length,
+            season_length,
+            
+            initial_smoothed,
+            initial_trend,
+            initial_seasonals,
+            
+            alpha_0, beta_0, gamma_0,
+
+            smoothed, trend, seasonals,
+
+            error
+        );
+
 
         // Forecasting values
         double *forecast = malloc(sizeof(double) * forecast_length);
@@ -144,8 +161,10 @@ double* forecast(double *series, int series_length, int season_length, int forec
         double *result = malloc(sizeof(double) * (series_length + forecast_length));
         for (int i = 0; i < series_length + forecast_length; ++i) {
             if (i < series_length) {
+                int now = smoothed[i];
                 result[i] = smoothed[i];
             } else {
+                int now = forecast[i - series_length];
                 result[i] = forecast[i - series_length];
             }
         }

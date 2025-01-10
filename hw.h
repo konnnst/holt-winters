@@ -12,6 +12,7 @@ double* get_initial_seasonals(int season_length, double *series, int series_leng
 
 
 // HW methods
+double* forecast(double *series, int series_length, int season_length, int forecast_length, double *coefficients);
 void holt_winters_forecast(
         double *forecast,
         int forecast_length,
