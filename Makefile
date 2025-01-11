@@ -5,3 +5,5 @@ all:
 	sudo rm /lib/pg_hw.so
 	chmod 755 pg_hw.so
 	sudo mv pg_hw.so /lib
+
+local:

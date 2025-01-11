@@ -42,8 +42,9 @@ hw_forecast_manual(PG_FUNCTION_ARGS)
     SPITupleTable *tuptable = SPI_tuptable;
 
     series_length = SPI_processed;
-    double *series = palloc(sizeof(double) * series_length);
 
+    double *series = palloc(sizeof(double) * series_length);
+    
     for (int i = 0; i < series_length; i++)
     {
         HeapTuple tuple = tuptable->vals[i];
@@ -52,6 +53,7 @@ hw_forecast_manual(PG_FUNCTION_ARGS)
 
     double *forecast = forecast_manual(series, series_length, season_length, forecast_length, 0.95, 0, 0.95);
 
+    elog(INFO, "ok");
     // Writeback to table
     ArrayType *result;
     Datum result_array[MAX_SIZE];

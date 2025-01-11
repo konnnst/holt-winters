@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "postgresql/server/postgres.h"
+
 #include "hw_debug.h"
 #include "hw_api.h"
 
@@ -56,5 +58,5 @@ int main() {
         }
     }
 
-    free(fc);
+    pfree(fc);
 }

@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "postgresql/server/postgres.h"
+
 #include "hw_debug.h"
 
 #ifndef DEBUG
@@ -99,9 +101,9 @@ double* forecast(double *series, int series_length, int season_length, int forec
         double* initial_seasonals = get_initial_seasonals(season_length, series, series_length);
 
         double *smoothed, *trend, *seasonals;
-        smoothed = malloc(sizeof(double) * series_length);
-        trend = malloc(sizeof(double) * series_length);
-        seasonals = malloc(sizeof(double) * series_length);
+        smoothed = palloc(sizeof(double) * series_length);
+        trend = palloc(sizeof(double) * series_length);
+        seasonals = palloc(sizeof(double) * series_length);
 
         double zero = 0, *error, min_error = -1;
         error = &zero;
@@ -161,7 +163,7 @@ double* forecast(double *series, int series_length, int season_length, int forec
             &min_error
         );
 
-        double *forecast = malloc(sizeof(double) * forecast_length);
+        double *forecast = palloc(sizeof(double) * forecast_length);
         holt_winters_forecast(
                 forecast, forecast_length,
                 smoothed, trend, seasonals,
@@ -170,7 +172,7 @@ double* forecast(double *series, int series_length, int season_length, int forec
         
 
         // Concatenate smoothed and forecasted values
-        double *result = malloc(sizeof(double) * (series_length + forecast_length));
+        double *result = palloc(sizeof(double) * (series_length + forecast_length));
         for (int i = 0; i < series_length + forecast_length; ++i) {
             if (i < series_length) {
                 int now = smoothed[i];
@@ -189,11 +191,11 @@ double* forecast(double *series, int series_length, int season_length, int forec
         }
 
         // Releasing dynamically allocated memory
-        free(initial_seasonals);
-        free(smoothed);
-        free(trend);
-        free(seasonals);
-        free(forecast);
+        pfree(initial_seasonals);
+        pfree(smoothed);
+        pfree(trend);
+        pfree(seasonals);
+        pfree(forecast);
 
         return result;
 }
