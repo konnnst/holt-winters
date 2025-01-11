@@ -25,9 +25,8 @@ PG_FUNCTION_INFO_V1(hw_forecast_manual);
 Datum
 hw_forecast_manual(PG_FUNCTION_ARGS)
 {
-//    int32 series_length = PG_GETARG_INT32(0);
-//    int32 season_length = PG_GETARG_INT32(1);
-//    int32 forecast_length = PG_GETARG_INT32(2);
+    int32 season_length = PG_GETARG_INT32(0);
+    int32 forecast_length = PG_GETARG_INT32(1);
 //
 //    float8 alpha = PG_GETARG_FLOAT8(3);
 //    float8 beta = PG_GETARG_FLOAT8(4);
@@ -39,22 +38,37 @@ hw_forecast_manual(PG_FUNCTION_ARGS)
         series_length = (int)SPI_tuptable->numvals;
     }
 
+    TupleDesc tupdesc = SPI_tuptable->tupdesc;
+    SPITupleTable *tuptable = SPI_tuptable;
+
+    series_length = SPI_processed;
+    double *series = palloc(sizeof(double) * series_length);
+
+    for (int i = 0; i < series_length; i++)
+    {
+        HeapTuple tuple = tuptable->vals[i];
+        series[i] = atof(SPI_getvalue(tuple, tupdesc, 1));
+    }
+
+    double *forecast = forecast_manual(series, series_length, season_length, forecast_length, 0.95, 0, 0.95);
+
+    // Writeback to table
     ArrayType *result;
-    Datum series_prepared[MAX_SIZE];
+    Datum result_array[MAX_SIZE];
     int16 typlen;
     bool typbyval;
     char typalign;
- 
-    TupleDesc tupdesc = SPI_tuptable->tupdesc;
-    SPITupleTable *tuptable = SPI_tuptable;
-    series_length = SPI_processed;
-    for (int i = 0; i < series_length; i++) {
-        HeapTuple tuple = tuptable->vals[i];
-        series_prepared[i] = atof(SPI_getvalue(tuple, tupdesc, 1));
+
+    elog(INFO, "ok");
+    for (int i = 0; i < series_length + forecast_length; ++i) {
+        result_array[i] = forecast[i];
     }
 
-    get_typlenbyvalalign(FLOAT8OID, &typlen, &typbyval, &typalign);
-    result = construct_array(series_prepared, series_length, FLOAT8OID, typlen, typbyval, typalign);
+    pfree(series);
+    pfree(forecast);
+
+    get_typlenbyvalalign(INT8OID, &typlen, &typbyval, &typalign);
+    result = construct_array(result_array, series_length, INT8OID, typlen, typbyval, typalign);
 
     SPI_finish();
 
