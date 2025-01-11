@@ -3,16 +3,22 @@
 
 #include "hw_debug.h"
 
+#ifndef DEBUG
+#define DEBUG 0
+#endif
+
+
 double* forecast_auto(double *series, int series_length, int season_length, int forecast_length) {
-    double *result = forecast(series, series_length, season_length, forecast_length, NULL, 0);
+    double *result = forecast(series, series_length, season_length, forecast_length, NULL, DEBUG);
     return result;
 }
 
 double* forecast_manual(double *series, int series_length, int season_length, int forecast_length, double alpha, double beta, double gamma) {
     double coefficients_arr[] = { alpha, beta, gamma }, *coefficients = coefficients_arr;
-    double *result = forecast(series, series_length, season_length, forecast_length, coefficients, 0);
+    double *result = forecast(series, series_length, season_length, forecast_length, coefficients, DEBUG);
     return result;
 }
+
 
 void holt_winters_forecast(
         double *forecast,

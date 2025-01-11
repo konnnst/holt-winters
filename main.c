@@ -30,22 +30,22 @@ int main() {
 
 
     double alpha = 0.835;
-    double beta = 0;
+    double beta = 0.11;
     double gamma = 0.9;
     //double alpha = 0.85;
     //double beta = 0.995;
     //double gamma = 0.995;
     double coeffs_arr[3] = {alpha, beta, gamma}, *coeffs = coeffs_arr;
     int debug = 1;
-    
-    double* fc = forecast(
-        series,
-        series_length,
-        season_length,
-        forecast_length,
-        coeffs,
-        debug
-    );
+    double *fc = forecast_manual(series, series_length, season_length, forecast_length, alpha, beta, gamma);
+ //   double* fc = forecast(
+ //       series,
+ //       series_length,
+ //       season_length,
+ //       forecast_length,
+ //       coeffs,
+ //       debug
+ //   );
 
     for (int i = 0; i < series_length + forecast_length; ++i) {
         printf("%f", fc[i]);
