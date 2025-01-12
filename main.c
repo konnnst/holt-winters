@@ -38,9 +38,9 @@ int main() {
     int forecast_length = 24;
 
 
-   // double *fc_man = forecast_manual(series, series_length, season_length, forecast_length, 0.716, 0.029, 0.993);
-   // print_series_and_forecast(fc_man, season_length, series_length, forecast_length);
-   // FREE(fc_man);
+    //double *fc_man = forecast_manual(series, series_length, season_length, forecast_length, 0.716, 0.029, 0.993);
+    //print_series_and_forecast(fc_man, season_length, series_length, forecast_length);
+    //FREE(fc_man);
 
     double *fc_auto = forecast_auto(series, series_length, season_length, forecast_length);
     print_series_and_forecast(fc_auto, season_length, series_length, forecast_length);

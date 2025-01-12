@@ -80,7 +80,7 @@ void holt_winters(
             seasonals[i + season_length] = gamma * (series[i] - smoothed[i]) + (1 - gamma) * seasonals[i];
         }
         value = smoothed[i] + trend[i] + seasonals[i];
-        *error += value * value;
+        *error += (value - series[i]) * (value - series[i]);
     }
 }
 
