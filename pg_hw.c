@@ -12,6 +12,7 @@
 #include <postgresql/server/access/htup.h>
 
 #include "hw_api.h"
+#include "build_options.h"
 
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
@@ -44,7 +45,7 @@ hw_forecast_manual(PG_FUNCTION_ARGS)
 
     series_length = SPI_processed;
 
-    double *series = palloc(sizeof(double) * series_length);
+    double *series = MALLOC(sizeof(double) * series_length);
     
     for (int i = 0; i < series_length; i++)
     {
@@ -71,8 +72,8 @@ hw_forecast_manual(PG_FUNCTION_ARGS)
     SPI_finish();
 
     // Releasing allocated memory
-    pfree(series);
-    pfree(forecast);
+    PFREE(series);
+    PFREE(forecast);
 
     PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -98,7 +99,7 @@ hw_forecast_auto(PG_FUNCTION_ARGS)
 
     series_length = SPI_processed;
 
-    double *series = palloc(sizeof(double) * series_length);
+    double *series = MALLOC(sizeof(double) * series_length);
     
     for (int i = 0; i < series_length; i++)
     {
@@ -126,8 +127,8 @@ hw_forecast_auto(PG_FUNCTION_ARGS)
     SPI_finish();
 
     // Releasing allocated memory
-    pfree(series);
-    pfree(forecast);
+    FREE(series);
+    FREE(forecast);
 
     PG_RETURN_ARRAYTYPE_P(result);
 

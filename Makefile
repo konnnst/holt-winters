@@ -1,5 +1,5 @@
 all:
-	cc -I /usr/include/postgresql/server -fPIC -c *.c
+	cc -I /usr/include/postgresql/server -DMODE=PG -fPIC -c *.c
 	cc -shared -o pg_hw.so *.o
 	rm *.o
 	sudo rm /lib/pg_hw.so
@@ -7,3 +7,7 @@ all:
 	sudo mv pg_hw.so /lib
 
 local:
+	cc -I /usr/include/postgresql/server -DMODE=LOCAL main.c print.c hw.c init.c
+
+clean:
+	rm *.o *.out *.so

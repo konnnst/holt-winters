@@ -35,3 +35,13 @@ void print_forecast(double *series, int series_length, double *forecast, int for
     }
 }
 
+void print_series_and_forecast(double *series, int season_length, int series_length, int forecast_length) {
+    for (int i = 0; i < series_length + forecast_length; ++i) {
+        printf("%f", series[i]);
+        if (i % season_length == season_length - 1) {
+            printf(",\n");
+        } else {
+            printf(", ");
+        }
+    }
+}

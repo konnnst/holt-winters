@@ -1,8 +1,9 @@
+#include "postgresql/server/postgres.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "postgresql/server/postgres.h"
-
+#include "build_options.h"
 #include "hw_debug.h"
 #include "hw_api.h"
 
@@ -28,7 +29,7 @@ int main() {
     }, *series = series_arr;
     int series_length = sizeof(series_arr) / sizeof(double);
     int season_length = 4;
-    int forecast_length = 14;
+    int forecast_length = 16;
 
 
     double alpha = 0.835;
@@ -37,26 +38,7 @@ int main() {
     //double alpha = 0.85;
     //double beta = 0.995;
     //double gamma = 0.995;
-    double coeffs_arr[3] = {alpha, beta, gamma}, *coeffs = coeffs_arr;
-    int debug = 1;
     double *fc = forecast_manual(series, series_length, season_length, forecast_length, alpha, beta, gamma);
- //   double* fc = forecast(
- //       series,
- //       series_length,
- //       season_length,
- //       forecast_length,
- //       coeffs,
- //       debug
- //   );
-
-    for (int i = 0; i < series_length + forecast_length; ++i) {
-        printf("%f", fc[i]);
-        if (i % 4 == 3) {
-            printf(",\n");
-        } else {
-            printf(", ");
-        }
-    }
-
-    pfree(fc);
+    print_series_and_forecast(fc, season_length, series_length, forecast_length);
+    FREE(fc);
 }

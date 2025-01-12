@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+#include "build_options.h"
 #include "postgresql/server/postgres.h"
 
 double get_initial_smoothed(double *series, int series_length) {
@@ -19,7 +20,7 @@ double get_initial_trend(int season_length, double *series, int series_length) {
 
 
 double* get_initial_seasonals(int season_length, double *series, int series_length) {
-    double* seasonals = palloc(sizeof(double) * season_length), season_sum, season_mean;
+    double* seasonals = MALLOC(sizeof(double) * season_length), season_sum, season_mean;
     int seasons_count = series_length / season_length;
 
     for (int i = 0; i < season_length; ++i) {
