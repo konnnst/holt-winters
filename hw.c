@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "postgresql/server/postgres.h"
+//#include "postgresql/server/postgres.h"
 
 #include "build_options.h"
 #include "hw_debug.h"
@@ -39,7 +39,7 @@ void holt_winters_forecast(
         double now_s = smoothed[series_length - 1];
         double now_b = trend[series_length - 1];
         double now_c = last_seasonals[(season_length + i + 1) % season_length];
-        double forecast_i = (now_s + (i + 1) * now_b) * now_c;
+        double forecast_i = (now_s + (i + 1) * now_b) + now_c;
         forecast[i] = forecast_i;
         //forecast[i] = (seasonals[series_length - 1] + (i + 1) * trend[series_length - 1])
             //* last_seasonals[(season_length + i + 1) % season_length];
@@ -73,21 +73,12 @@ void holt_winters(
         seasonals[i] = initial_seasonals[i];
     }
 
-    // Compute for first period
-    for (int i = 1; i < season_length; ++i) {
-        smoothed[i] = alpha * series[i] / seasonals[i] + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
-        //smoothed[i] = alpha * series[i] + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
+    for (int i = 1; i < series_length; ++i) {
+        smoothed[i] = alpha * (series[i] - seasonals[i]) + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
         trend[i] = beta * (smoothed[i] - smoothed[i - 1]) + (1 - beta) * trend[i - 1];
-
-        *error += (series[i] - smoothed[i]) * (series[i] - smoothed[i]);
-    }
-
-    // Compute for later periods
-    for (int i = season_length; i < series_length; ++i) {
-        smoothed[i] = alpha * series[i] / seasonals[i - season_length] + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
-        //smoothed[i] = alpha * series[i] + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
-        trend[i] = beta * (smoothed[i] - smoothed[i - 1]) + (1 - beta) * trend[i - 1];
-        seasonals[i] = gamma * (series[i] / smoothed[i]) + (1 - gamma) * seasonals[i - season_length];
+        if (i + season_length < series_length) {
+            seasonals[i + season_length] = gamma * (series[i] - smoothed[i]) + (1 - gamma) * seasonals[i];
+        }
 
         *error += (series[i] - smoothed[i]) * (series[i] - smoothed[i]);
     }
@@ -110,7 +101,6 @@ double* forecast(double *series, int series_length, int season_length, int forec
         
         // Calculate indices up 
         if (coefficients == NULL) {
-
             for (double alpha = 0; alpha <= 1; alpha += 0.005) {
                 for (double beta = 0; beta <= 1; beta += 0.005) {
                     for (double gamma = 0; gamma <= 1; gamma += 0.005) {
@@ -135,6 +125,7 @@ double* forecast(double *series, int series_length, int season_length, int forec
                             beta_0 = beta;
                             gamma_0 = gamma;
                             min_error = *error;
+                            printf("%f %f %f", alpha_0, beta_0, gamma_0);
                         }
                         *error = 0;
                     }
@@ -159,7 +150,7 @@ double* forecast(double *series, int series_length, int season_length, int forec
 
             smoothed, trend, seasonals,
 
-            &min_error
+            error
         );
 
         double *forecast = MALLOC(sizeof(double) * forecast_length);
@@ -184,7 +175,7 @@ double* forecast(double *series, int series_length, int season_length, int forec
 
         // Print debug information
         if (debug) {
-            print_error(&min_error);
+            print_error(error);
             print_coefficients(alpha_0, beta_0, gamma_0);
             print_indices(smoothed, trend, seasonals, series_length);
         }

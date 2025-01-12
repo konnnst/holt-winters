@@ -20,30 +20,25 @@ double get_initial_trend(int season_length, double *series, int series_length) {
 
 
 double* get_initial_seasonals(int season_length, double *series, int series_length) {
-    double* seasonals = MALLOC(sizeof(double) * season_length), season_sum, season_mean;
     int seasons_count = series_length / season_length;
-
-    for (int i = 0; i < season_length; ++i) {
-        seasonals[i] = 0;
-    }
-
+    double *seasonals = MALLOC(sizeof(double) * season_length), season_sum, season_mean,
+           *averages = MALLOC(sizeof(double) * seasons_count);
 
     for (int i = 0; i < seasons_count; ++i) {
-        season_sum = 0;
-        for (int j = 0; j < season_length; ++j ) {
-            season_sum += series[j + i * season_length];
-        }
-        season_mean = season_sum / season_length;
-
+        averages[i] = 0;
         for (int j = 0; j < season_length; ++j) {
-            seasonals[j] += series[i * season_length + j] / season_mean;
+            averages[i] += series[i * season_length + j];
         }
+        averages[i] /= season_length;
     }
 
     for (int i = 0; i < season_length; ++i) {
-        seasonals[i] /= seasons_count;
+        double sum_over_avg = 0;
+        for (int j = 0; j < seasons_count; ++j) {
+            sum_over_avg += series[season_length * i + j] - averages[j];
+        }
+        seasonals[i] = sum_over_avg / seasons_count;
     }
 
     return seasonals;
 }
-
