@@ -5,6 +5,7 @@ void print_indices(double *smoothed, double *trend, double *seasonals, int lengt
 void print_forecast(double *series, int series_length, double *forecast, int forecast_length);
 void print_error(double *error);
 void print_series_and_forecast(double *series, int season_length, int series_length, int forecast_length);
+void print_series(double *series, int series_length);
 
 // Initialization
 double get_initial_smoothed(double *series, int series_length);

@@ -35,7 +35,7 @@ double* get_initial_seasonals(int season_length, double *series, int series_leng
     for (int i = 0; i < season_length; ++i) {
         double sum_over_avg = 0;
         for (int j = 0; j < seasons_count; ++j) {
-            sum_over_avg += series[season_length * i + j] - averages[j];
+           sum_over_avg += series[season_length * i + j] - averages[j];
         }
         seasonals[i] = sum_over_avg / seasons_count;
     }

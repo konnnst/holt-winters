@@ -32,17 +32,13 @@ int main() {
     int forecast_length = 16;
 
 
-    double alpha = 1;
+    double alpha = 0.5;
     double beta = 0;
     double gamma = 0;
 
-    double *fc_man = forecast_manual(series, series_length, season_length, forecast_length, alpha, beta, gamma);
-    print_series_and_forecast(fc_man, season_length, series_length, forecast_length);
+    double *fc_man = forecast_manual(series, series_length, season_length, forecast_length, 0.5, 0, 0.5);
     FREE(fc_man);
 
-    printf("\n\n");
-
-    double *fc_auto = forecast_auto(series, series_length, season_length, forecast_length);
-    print_series_and_forecast(fc_auto, season_length, series_length, forecast_length);
+    double *fc_auto = forecast_manual(series, series_length, season_length, forecast_length, 0.5, 0, 0.5);
     FREE(fc_auto);
 }
