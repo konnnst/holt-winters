@@ -42,8 +42,6 @@ void holt_winters_forecast(
         double now_c = last_seasonals[(season_length + i + 1) % season_length];
         double forecast_i = (now_s + (i + 1) * now_b) + now_c;
         forecast[i] = forecast_i;
-        //forecast[i] = (seasonals[series_length - 1] + (i + 1) * trend[series_length - 1])
-            //* last_seasonals[(season_length + i + 1) % season_length];
     }
 }
 
@@ -67,25 +65,22 @@ void holt_winters(
         
         double *error
 ) {
-
-    smoothed[0] = initial_smoothed;
-    trend[0] = initial_trend;
+    double value;
     for (int i = 0; i < season_length; ++i) {
         seasonals[i] = initial_seasonals[i];
     }
+    smoothed[0] = initial_smoothed;
+    trend[0] = initial_trend;
+    seasonals[season_length] = seasonals[0];
 
     for (int i = 1; i < series_length; ++i) {
-        double a = alpha, sii = series[i], seai = seasonals[i], sio = smoothed[i - 1], tre = trend[i - 1];
         smoothed[i] = alpha * (series[i] - seasonals[i]) + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
         trend[i] = beta * (smoothed[i] - smoothed[i - 1]) + (1 - beta) * trend[i - 1];
         if (i + season_length < series_length) {
             seasonals[i + season_length] = gamma * (series[i] - smoothed[i]) + (1 - gamma) * seasonals[i];
         }
-
-        double osmi = smoothed[i], oti = trend[i], osei = seasonals[i];
-        double si = series[i], smi = smoothed[i];
-
-        *error += (series[i] - smoothed[i]) * (series[i] - smoothed[i]);
+        value = smoothed[i] + trend[i] + seasonals[i];
+        *error += value * value;
     }
 }
 
@@ -106,9 +101,9 @@ double* forecast(double *series, int series_length, int season_length, int forec
         
         // Calculate indices up 
         if (coefficients == NULL) {
-            for (double alpha = 0; alpha <= 1.001; alpha += 0.5) {
-                for (double beta = 0; beta <= 1.001; beta += 0.5) {
-                    for (double gamma = 0; gamma <= 1.001; gamma += 0.5) {
+            for (double alpha = 0; alpha <= 1.001; alpha += 0.005) {
+                for (double beta = 0; beta <= 1.001; beta += 0.005) {
+                    for (double gamma = 0; gamma <= 1.001; gamma += 0.005) {
                         if (alpha == 1 && beta == 0 && gamma == 0) {
                            alpha = 1;
                         }
@@ -128,7 +123,6 @@ double* forecast(double *series, int series_length, int season_length, int forec
 
                             error
                         );
-                        printf("Err(%f, %f, %f): %f\n", alpha, beta, gamma, *error);
                         if (min_error < 0 || *error < min_error) {
                             alpha_0 = alpha;
                             beta_0 = beta;
@@ -175,8 +169,7 @@ double* forecast(double *series, int series_length, int season_length, int forec
         double *result = MALLOC(sizeof(double) * (series_length + forecast_length));
         for (int i = 0; i < series_length + forecast_length; ++i) {
             if (i < series_length) {
-                int now = smoothed[i];
-                result[i] = smoothed[i];
+                result[i] = smoothed[i] + trend[i] + seasonals[i]; 
             } else {
                 int now = forecast[i - series_length];
                 result[i] = forecast[i - series_length];

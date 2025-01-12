@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "build_options.h"
 //#include "postgresql/server/postgres.h"
@@ -14,8 +15,9 @@ double get_initial_trend(int season_length, double *series, int series_length) {
     for (int i = 0; i < season_length; ++i) {
         trend += series[season_length + i] - series[i];
     }
-
-    return trend / (season_length * season_length);
+    
+    trend /= season_length * season_length;
+    return trend;
 }
 
 
@@ -35,7 +37,7 @@ double* get_initial_seasonals(int season_length, double *series, int series_leng
     for (int i = 0; i < season_length; ++i) {
         double sum_over_avg = 0;
         for (int j = 0; j < seasons_count; ++j) {
-           sum_over_avg += series[season_length * i + j] - averages[j];
+           sum_over_avg += series[season_length * j + i] - averages[j];
         }
         seasonals[i] = sum_over_avg / seasons_count;
     }
