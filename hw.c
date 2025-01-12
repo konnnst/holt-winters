@@ -76,6 +76,7 @@ void holt_winters(
     // Compute for first period
     for (int i = 1; i < season_length; ++i) {
         smoothed[i] = alpha * series[i] / seasonals[i] + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
+        //smoothed[i] = alpha * series[i] + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
         trend[i] = beta * (smoothed[i] - smoothed[i - 1]) + (1 - beta) * trend[i - 1];
 
         *error += (series[i] - smoothed[i]) * (series[i] - smoothed[i]);
@@ -84,6 +85,7 @@ void holt_winters(
     // Compute for later periods
     for (int i = season_length; i < series_length; ++i) {
         smoothed[i] = alpha * series[i] / seasonals[i - season_length] + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
+        //smoothed[i] = alpha * series[i] + (1 - alpha) * (smoothed[i - 1] + trend[i - 1]);
         trend[i] = beta * (smoothed[i] - smoothed[i - 1]) + (1 - beta) * trend[i - 1];
         seasonals[i] = gamma * (series[i] / smoothed[i]) + (1 - gamma) * seasonals[i - season_length];
 

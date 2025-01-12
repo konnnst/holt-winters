@@ -1,4 +1,4 @@
-#include "postgresql/server/postgres.h"
+//#include "postgresql/server/postgres.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,13 +32,17 @@ int main() {
     int forecast_length = 16;
 
 
-    double alpha = 0.835;
-    double beta = 0.11;
-    double gamma = 0.9;
-    //double alpha = 0.85;
-    //double beta = 0.995;
-    //double gamma = 0.995;
-    double *fc = forecast_manual(series, series_length, season_length, forecast_length, alpha, beta, gamma);
-    print_series_and_forecast(fc, season_length, series_length, forecast_length);
-    FREE(fc);
+    double alpha = 1;
+    double beta = 0;
+    double gamma = 0;
+
+    double *fc_man = forecast_manual(series, series_length, season_length, forecast_length, alpha, beta, gamma);
+    print_series_and_forecast(fc_man, season_length, series_length, forecast_length);
+    FREE(fc_man);
+
+    printf("\n\n");
+
+    double *fc_auto = forecast_auto(series, series_length, season_length, forecast_length);
+    print_series_and_forecast(fc_auto, season_length, series_length, forecast_length);
+    FREE(fc_auto);
 }

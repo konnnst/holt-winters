@@ -7,7 +7,7 @@ all:
 	sudo mv pg_hw.so /lib
 
 local:
-	cc -I /usr/include/postgresql/server -DMODE=LOCAL main.c print.c hw.c init.c
+	cc -g -I /usr/include/postgresql/server -DMODE=LOCAL -DDEBUG=1 main.c print.c hw.c init.c
 
 clean:
 	rm *.o *.out *.so

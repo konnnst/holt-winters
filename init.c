@@ -1,10 +1,10 @@
 #include <stdlib.h>
 
 #include "build_options.h"
-#include "postgresql/server/postgres.h"
+//#include "postgresql/server/postgres.h"
 
 double get_initial_smoothed(double *series, int series_length) {
-    double smoothed  = series[0];
+    double smoothed = series[0];
     return smoothed;
 }
 
