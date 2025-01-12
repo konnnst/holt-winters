@@ -25,6 +25,7 @@ PG_FUNCTION_INFO_V1(hw_forecast_manual);
 Datum
 hw_forecast_manual(PG_FUNCTION_ARGS)
 {
+    // Parsing the arguments
     int32 season_length = PG_GETARG_INT32(0);
     int32 forecast_length = PG_GETARG_INT32(1);
 
@@ -32,6 +33,7 @@ hw_forecast_manual(PG_FUNCTION_ARGS)
     float8 beta = PG_GETARG_FLOAT8(4);
     float8 gamma = PG_GETARG_FLOAT8(5);
 
+    // Recieving information from the table
     int status = 0, series_length = 0;
     if (SPI_connect() == SPI_OK_CONNECT && SPI_execute("SELECT series FROM series_table", true, 0) == SPI_OK_SELECT && SPI_tuptable != NULL) {
         series_length = (int)SPI_tuptable->numvals;
@@ -52,28 +54,27 @@ hw_forecast_manual(PG_FUNCTION_ARGS)
 
     double *forecast = forecast_manual(series, series_length, season_length, forecast_length, alpha, beta, gamma);
 
-    // Writeback to table
+    // Writeback to the table
     ArrayType *result;
     Datum result_array[MAX_SIZE];
     int16 typlen;
     bool typbyval;
     char typalign;
 
-    elog(INFO, "ok");
     for (int i = 0; i < series_length + forecast_length; ++i) {
         result_array[i] = forecast[i];
     }
-
-    pfree(series);
-    pfree(forecast);
 
     get_typlenbyvalalign(INT8OID, &typlen, &typbyval, &typalign);
     result = construct_array(result_array, series_length, INT8OID, typlen, typbyval, typalign);
 
     SPI_finish();
 
-    PG_RETURN_ARRAYTYPE_P(result);
+    // Releasing allocated memory
+    pfree(series);
+    pfree(forecast);
 
+    PG_RETURN_ARRAYTYPE_P(result);
 }
 
 
@@ -82,9 +83,11 @@ PG_FUNCTION_INFO_V1(hw_forecast_auto);
 Datum
 hw_forecast_auto(PG_FUNCTION_ARGS)
 {
+    // Parsing the arguments
     int32 season_length = PG_GETARG_INT32(0);
     int32 forecast_length = PG_GETARG_INT32(1);
 
+    // Recieving information from the table
     int status = 0, series_length = 0;
     if (SPI_connect() == SPI_OK_CONNECT && SPI_execute("SELECT series FROM series_table", true, 0) == SPI_OK_SELECT && SPI_tuptable != NULL) {
         series_length = (int)SPI_tuptable->numvals;
@@ -102,28 +105,29 @@ hw_forecast_auto(PG_FUNCTION_ARGS)
         HeapTuple tuple = tuptable->vals[i];
         series[i] = atof(SPI_getvalue(tuple, tupdesc, 1));
     }
-
+    
+    // Forecasting
     double *forecast = forecast_auto(series, series_length, season_length, forecast_length);
 
-    // Writeback to table
+    // Writeback to the table
     ArrayType *result;
     Datum result_array[MAX_SIZE];
     int16 typlen;
     bool typbyval;
     char typalign;
 
-    elog(INFO, "ok");
     for (int i = 0; i < series_length + forecast_length; ++i) {
         result_array[i] = forecast[i];
     }
-
-    pfree(series);
-    pfree(forecast);
 
     get_typlenbyvalalign(INT8OID, &typlen, &typbyval, &typalign);
     result = construct_array(result_array, series_length, INT8OID, typlen, typbyval, typalign);
 
     SPI_finish();
+
+    // Releasing allocated memory
+    pfree(series);
+    pfree(forecast);
 
     PG_RETURN_ARRAYTYPE_P(result);
 
